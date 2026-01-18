@@ -6,18 +6,18 @@ const bedRooms = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const bathRooms = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 const styles = ["Modern luxury", "Modern", "Traditional", "Minimal", "Luxury villa"];
-const parkingOptions = ["None", "1 car", "2 cars"];
+// const parkingOptions = ["None", "1 car", "2 cars"];
 const kitchenTypes = ["Open", "Closed"];
 const extrasList = ["Balcony", "Pooja room", "Home office", "Garden", "Terrace seating", "Lift space"];
 
 export default function Home() {
-  const [plot, setPlot] = useState("30x40 ft");
+  const [plot, setPlot] = useState("30x40");
   const [Nfloors, setNfloors] = useState(2);
   const [NbedRooms, setNbedRooms] = useState(4);
   const [NbathRooms, setNbathRooms] = useState(4);
 
   const [style, setStyle] = useState("Modern luxury");
-  const [parking, setParking] = useState("1 car");
+  const [parking, setParking] = useState("1 car 2 bikes");
   const [kitchen, setKitchen] = useState("Open");
 
   const [extras, setExtras] = useState(["Balcony", "Pooja room"]);
@@ -26,16 +26,16 @@ export default function Home() {
   const [result, setResult] = useState("");
 
   const prompt = useMemo(() => {
-    const extraText = extras.length ? extras.join(", ") : "None";
+    const extraText = extras.length?extras.join(", "):"None";
     return (
-      `Plot: ${plot}\n` +
+      `Plot: ${plot} ft\n` +
       `Floors: ${Nfloors}\n` +
       `Bedrooms: ${NbedRooms}\n` +
       `Bathrooms: ${NbathRooms}\n` +
       `Style: ${style}\n` +
       `Parking: ${parking}\n` +
       `Kitchen: ${kitchen}\n` +
-      `Extras: ${extraText}`
+      `Extras: ${[extraText]}`
     );
   }, [plot, Nfloors, NbedRooms, NbathRooms, style, parking, kitchen, extras]);
 
@@ -113,6 +113,12 @@ export default function Home() {
         body: JSON.stringify({ prompt }),
       });
 
+          if (!res.ok) {
+      const err = await res.json();
+      setResult(`❌ ${err.detail}`);
+      return;
+    }
+
       const data = await res.json();
       setResult(data?.response || "No response received.");
     } catch (err) {
@@ -138,18 +144,17 @@ export default function Home() {
         <section className="card">
           <div className="card__head">
             <h2 className="card__title">Home Inputs</h2>
-            <p className="card__hint">Minimal inputs, best results ✅</p>
+            <p className="card__hint">Minimal inputs, best results </p>
           </div>
 
           <form className="form" onSubmit={handleSubmit}>
             <div className="field">
-              <label className="label">Plot size</label>
+              <label className="label">Plot size (ft)</label>
               <input
                 className="input"
                 type="text"
                 value={plot}
                 onChange={(e) => setPlot(e.target.value)}
-                placeholder="Ex: 30x40 ft"
               />
             </div>
             <div className="grid">
@@ -200,13 +205,11 @@ export default function Home() {
 
               <div className="field">
                 <label className="label">Parking</label>
-                <select className="select" value={parking} onChange={(e) => setParking(e.target.value)}>
-                  {parkingOptions.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
-                    </option>
-                  ))}
-                </select>
+                <input type="text"
+                className="select"
+                value={parking}
+                placeholder="1 car 2 bikes"
+                onChange={(e)=>setParking(e.target.value)}/>
               </div>
             </div>
 

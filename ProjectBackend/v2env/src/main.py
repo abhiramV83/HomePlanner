@@ -3,12 +3,19 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from src.ai.gemini import Gemini
 from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime
+from fastapi import Request
+daily_usage = {}  # { "ip": {"count": int, "date": "YYYY-MM-DD"} }
+DAILY_LIMIT = 2
+
 
 
 app = FastAPI()
 origins = [
-      "http://localhost:5173",
-  "http://127.0.0.1:5173"]
+    "http://localhost:5173",
+    "https://abhiramv83.github.io"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -25,22 +32,38 @@ def load_system_prompt():
 
 system_prompt = load_system_prompt()
 
-gemini_api_key = os.getenv("GEMINI_API_KEY")
+gemini_api_key = os.getenv("GEMINI_API_KEY")# api key as a env variable
 print("GEMINI KEY FOUND:", bool(gemini_api_key))
 
 if not gemini_api_key:
     raise ValueError("GEMINI_API_KEY not found! Set it before running uvicorn.")
 
-ai_platform = Gemini(api_key=gemini_api_key, system_prompt=system_prompt)
+ai_platform = Gemini(api_key=gemini_api_key, system_prompt=system_prompt)#constructer executes when this obj creates
 
 class ChatRequest(BaseModel):
     prompt: str
 
 class ChatResponse(BaseModel):
     response: str
-
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, http_request: Request):
+    ip = http_request.client.host
+    today = datetime.now().date().isoformat()
+
+    if ip not in daily_usage:
+        daily_usage[ip] = {"count": 0, "date": today}
+
+    if daily_usage[ip]["date"] != today:
+        daily_usage[ip] = {"count": 0, "date": today}
+
+    if daily_usage[ip]["count"] >= DAILY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail="Daily limit reached (2 requests/day). Try again tomorrow."
+        )
+
+    daily_usage[ip]["count"] += 1
+
     try:
         response_text = ai_platform.chat(request.prompt)
         return ChatResponse(response=response_text)

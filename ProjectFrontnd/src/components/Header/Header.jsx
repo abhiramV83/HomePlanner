@@ -6,13 +6,11 @@ export default function Header() {
     <header className="hdr">
       <nav className="hdr__nav">
         <div className="hdr__wrap">
-          {/* Logo */}
           <Link to="/" className="hdr__brand">
             <div className="hdr__logo">🏡</div>
             <span className="hdr__name">Home Planner</span>
           </Link>
 
-          {/* Links */}
           <ul className="hdr__links">
             <li>
               <NavLink
