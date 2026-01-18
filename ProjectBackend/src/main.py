@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from fastapi import Request
 daily_usage = {}  # { "ip": {"count": int, "date": "YYYY-MM-DD"} }
-DAILY_LIMIT = 2
+DAILY_LIMIT = 1
 
 
 
@@ -42,30 +42,36 @@ ai_platform = Gemini(api_key=gemini_api_key, system_prompt=system_prompt)#constr
 
 class ChatRequest(BaseModel):
     prompt: str
+    user_id: str
 
 class ChatResponse(BaseModel):
     response: str
+
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest, http_request: Request):
-    ip = http_request.client.host
+async def chat(request: ChatRequest):
+    user_key = request.user_id
     today = datetime.now().date().isoformat()
 
-    if ip not in daily_usage:
-        daily_usage[ip] = {"count": 0, "date": today}
+    if user_key not in daily_usage:
+        daily_usage[user_key] = {"count": 0, "date": today}
 
-    if daily_usage[ip]["date"] != today:
-        daily_usage[ip] = {"count": 0, "date": today}
+    if daily_usage[user_key]["date"] != today:
+        daily_usage[user_key] = {"count": 0, "date": today}
 
-    if daily_usage[ip]["count"] >= DAILY_LIMIT:
+    if daily_usage[user_key]["count"] >= DAILY_LIMIT:
         raise HTTPException(
             status_code=429,
-            detail="Daily limit reached (2 requests/day). Try again tomorrow."
+            detail="Daily limit reached (1 request/day). Try again tomorrow."
         )
 
-    daily_usage[ip]["count"] += 1
+    daily_usage[user_key]["count"] += 1
 
     try:
         response_text = ai_platform.chat(request.prompt)
         return ChatResponse(response=response_text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/")
+async def root():
+    return {"message": "Hello"}
