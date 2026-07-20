@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="ftr__top">
           <div className="ftr__brand">
             <Link to="/" className="ftr__brandLink">
-              <div className="ftr__logo">🏡</div>
+              <div className="ftr__logo"><img src="icon.png" alt="HomePlanner" /></div>
               <div>
                 <h3 className="ftr__name">Home Planner</h3>
                 <p className="ftr__tag">Luxury home plan generator using AI</p>

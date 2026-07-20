@@ -11,6 +11,9 @@ const kitchenTypes = ["Open", "Closed"];
 const extrasList = ["Balcony", "Pooja room", "Home office", "Garden", "Terrace seating", "Lift space"];
 
 export default function Home() {
+  const userId = localStorage.getItem("hp_user_id") || crypto.randomUUID();
+  localStorage.setItem("hp_user_id", userId);
+
   const [plot, setPlot] = useState("30x40");
   const [Nfloors, setNfloors] = useState(2);
   const [NbedRooms, setNbedRooms] = useState(4);
@@ -35,7 +38,7 @@ export default function Home() {
       `Style: ${style}\n` +
       `Parking: ${parking}\n` +
       `Kitchen: ${kitchen}\n` +
-      `Extras: ${[extraText]}`
+      `Extras: ${extraText}`
     );
   }, [plot, Nfloors, NbedRooms, NbathRooms, style, parking, kitchen, extras]);
 
@@ -86,9 +89,9 @@ export default function Home() {
   const copyText = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied ✅");
+      alert("Copied ");
     } catch {
-      alert("Copy failed ❌");
+      alert("Copy failed ");
     }
   };
 
@@ -96,7 +99,7 @@ export default function Home() {
     e.preventDefault();
 
     if (!plot.trim()) {
-      alert("Please enter plot size ✅");
+      alert("Please enter plot size ");
       return;
     }
 
@@ -104,13 +107,13 @@ export default function Home() {
       setLoading(true);
       setResult("");
 
-      const res = await fetch("http://127.0.0.1:8000/chat", {
+      const res = await fetch("https://homeplanner-backend.onrender.com/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           accept: "application/json",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, user_id: userId }),
       });
 
           if (!res.ok) {
@@ -136,7 +139,7 @@ export default function Home() {
       <header className="hp__header">
         <div>
           <h1 className="hp__title">Home Planner</h1>
-          <p className="hp__subtitle">Enter details . Generate a luxury home plan ✨</p>
+          <p className="hp__subtitle">Enter details . Generate a luxury home plan </p>
         </div>
       </header>
 
@@ -251,7 +254,6 @@ export default function Home() {
                   </button>
                 ))}
               </div>
-              <p className="helper">Tip: Select 1–3 extras for clean output ✅</p>
             </div>
 
             <div className="field">
@@ -279,7 +281,7 @@ export default function Home() {
           <div className="output">
             {!result && !loading && (
               <div className="output__empty">
-                <p className="output__emoji">🏗️</p>
+                <img src="icon.png" alt="" />
                 <p className="output__text">
                   Fill inputs and click <b>Generate Plan</b>
                 </p>
@@ -337,7 +339,7 @@ export default function Home() {
       </main>
 
       <footer className="hp__footer">
-        <p>React + FastAPI + Gemini 2.5 Flash ⚡</p>
+        <p>React + FastAPI + Gemini 2.5 Flash </p>
       </footer>
     </div>
   );

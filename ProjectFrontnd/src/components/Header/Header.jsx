@@ -7,7 +7,7 @@ export default function Header() {
       <nav className="hdr__nav">
         <div className="hdr__wrap">
           <Link to="/" className="hdr__brand">
-            <div className="hdr__logo">🏡</div>
+            <div className="hdr__logo"><img src="icon.png" alt="HomePlanner" /></div>
             <span className="hdr__name">Home Planner</span>
           </Link>
 
