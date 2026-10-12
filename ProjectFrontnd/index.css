@@ -15,11 +15,11 @@ body {
 body {
   min-width: 320px;
   min-height: 100vh;
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  background: #070912;
-  color: rgba(255, 255, 255, 0.87);
+  background: #f1f5f9; /* Slate-100 */
+  color: #0f172a;      /* Slate-900 */
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -42,3 +42,4 @@ img {
   max-width: 100%;
   display: block;
 }
+

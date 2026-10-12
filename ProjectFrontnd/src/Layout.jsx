@@ -1,15 +1,15 @@
-import React from 'react'
+import Header from './components/Header/Header'
 import Footer from './components/Footer/Footer'
-import Header from './components/header/header'
 import { Outlet } from 'react-router-dom'
-function layout() {
+
+export default function Layout() {
   return (
-    <>
-    <Header/>
-    <Outlet/>
-    <Footer/>
-    </>
+    <div className="min-h-screen flex flex-col bg-[#090d16] text-slate-100 blueprint-grid">
+      <Header />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
   )
 }
-
-export default layout

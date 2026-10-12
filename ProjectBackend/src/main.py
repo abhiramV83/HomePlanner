@@ -1,18 +1,30 @@
 import os
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from src.ai.gemini import Gemini
-from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
-from fastapi import Request
-daily_usage = {}  # { "ip": {"count": int, "date": "YYYY-MM-DD"} }
-DAILY_LIMIT = 1
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from src.ai.llm import generate_response
+from src.database import db
+from src.routes.plans import router as plans_router
+from src.routes.generate import router as generate_router
+from src.routes.refine import router as refine_router
 
 
+app = FastAPI(
+    title="HomePlanner API",
+    description="CAD Floor Plan Generator & Architectural Assistant",
+    version="1.0.0"
+)
 
-app = FastAPI()
 origins = [
     "http://localhost:5173",
+    "http://localhost:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175",
     "https://abhiramv83.github.io"
 ]
 
@@ -23,55 +35,61 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-def load_system_prompt():
+
+
+@app.on_event("startup")
+async def startup():
     try:
-        with open("src/prompts/system_prompt.md", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return ""
+        await db.command("ping")
+        print("[OK] MongoDB Connected Successfully")
+    except Exception as e:
+        print(f"[WARNING] MongoDB connection ping failed: {e}. Persistence endpoints may be unavailable.")
 
-system_prompt = load_system_prompt()
 
-gemini_api_key = os.getenv("GEMINI_API_KEY")# api key as a env variable
-print("GEMINI KEY FOUND:", bool(gemini_api_key))
+app.include_router(plans_router)
+app.include_router(generate_router)
+app.include_router(refine_router)
 
-if not gemini_api_key:
-    raise ValueError("GEMINI_API_KEY not found! Set it before running uvicorn.")
-
-ai_platform = Gemini(api_key=gemini_api_key, system_prompt=system_prompt)#constructer executes when this obj creates
 
 class ChatRequest(BaseModel):
     prompt: str
     user_id: str
 
+
 class ChatResponse(BaseModel):
     response: str
 
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    user_key = request.user_id
-    today = datetime.now().date().isoformat()
-
-    if user_key not in daily_usage:
-        daily_usage[user_key] = {"count": 0, "date": today}
-
-    if daily_usage[user_key]["date"] != today:
-        daily_usage[user_key] = {"count": 0, "date": today}
-
-    if daily_usage[user_key]["count"] >= DAILY_LIMIT:
-        raise HTTPException(
-            status_code=429,
-            detail="Daily limit reached (1 request/day). Try again tomorrow."
-        )
-
-    daily_usage[user_key]["count"] += 1
-
     try:
-        response_text = ai_platform.chat(request.prompt)
+        response_text = generate_response(request.prompt)
         return ChatResponse(response=response_text)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=f"Chat generation error: {str(e)}"
+        )
+
 
 @app.get("/")
 async def root():
-    return {"message": "Hello"}
+    return {
+        "message": "HomePlanner API Running",
+        "version": "1.0.0",
+        "status": "healthy"
+    }
+
+
+@app.get("/health")
+async def health():
+    db_status = "connected"
+    try:
+        await db.command("ping")
+    except Exception:
+        db_status = "disconnected"
+
+    return {
+        "status": "healthy",
+        "database": db_status
+    }
