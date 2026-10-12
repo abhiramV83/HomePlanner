@@ -5,12 +5,14 @@ import FloorPlanRenderer from "./FloorPlanRenderer";
 import CostPanel from "./CostPanel";
 import VastuBadge from "./VastuBadge";
 import { evaluateVastu, computeOverallVastuScore } from "../utils/vastu";
+import { exportPlanToPDF } from "../utils/pdfExport";
 
 export default function PublicView() {
   const { id } = useParams();
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [exporting, setExporting] = useState(false);
 
   const fetchPlan = useCallback(async () => {
     if (!id) return;
@@ -69,7 +71,7 @@ export default function PublicView() {
           <p className="text-xs text-slate-400 max-w-xl">{planData.meta.description}</p>
         </div>
 
-        <div className="flex gap-4 text-xs font-semibold">
+        <div className="flex items-center gap-4 text-xs font-semibold">
           <div className="text-right">
             <span className="text-[9px] text-slate-500 block font-bold uppercase">Style</span>
             <span className="font-bold text-slate-200">{planData.meta.style}</span>
@@ -78,6 +80,28 @@ export default function PublicView() {
             <span className="text-[9px] text-slate-500 block font-bold uppercase">Plot Dimensions</span>
             <span className="font-mono font-bold text-white">{planData.meta.plotWidth}ft × {planData.meta.plotLength}ft</span>
           </div>
+          <button
+            onClick={async () => {
+              setExporting(true);
+              try {
+                await exportPlanToPDF(planData);
+              } catch (err) {
+                alert("Failed to export PDF: " + err.message);
+              } finally {
+                setExporting(false);
+              }
+            }}
+            disabled={exporting}
+            className="btn-radiant px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg ml-2 shrink-0 cursor-pointer"
+            aria-label="Export Blueprint to PDF"
+          >
+            {exporting ? (
+              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            )}
+            <span>Export PDF</span>
+          </button>
         </div>
       </div>
 
