@@ -1,0 +1,14 @@
+# Skills & Local Working Documents
+SKILL*.md
+skill*.md
+
+# Environment variables
+.env
+*.env.local
+
+# Operating System & Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
