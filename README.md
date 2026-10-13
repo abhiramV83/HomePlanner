@@ -219,8 +219,7 @@ HomePlanner/
 │   ├── package.json
 │   └── vite.config.js                  # Vite configuration with base: "/homeplanner/"
 │
-├── README.md                           # Comprehensive documentation
-└── SKILL (3).md                        # UI/UX design intelligence specification
+└── README.md                           # Comprehensive documentation
 ```
 
 ---
