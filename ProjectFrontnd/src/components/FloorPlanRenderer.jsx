@@ -112,9 +112,11 @@ export default function FloorPlanRenderer({ plan, activeRoomId, onRoomHover, pre
   const pad = 4;
   const northAngle = meta.northDirection || 0;
 
-  const floorRooms = rooms.filter((r) => r.floor === selectedFloor);
-  const floorOpenings = openings.filter((o) => o.floor === selectedFloor);
   const uniqueFloors = [...new Set(rooms.map((r) => r.floor))].sort((a, b) => a - b);
+  const activeFloor = uniqueFloors.includes(selectedFloor) ? selectedFloor : (uniqueFloors[0] ?? 0);
+
+  const floorRooms = rooms.filter((r) => r.floor === activeFloor);
+  const floorOpenings = openings.filter((o) => o.floor === activeFloor);
 
   const roomMetaDict = isBlueprint ? ROOM_META_BLUEPRINT : ROOM_META_LIGHT;
   const getRoomMeta = (t = "") => roomMetaDict[t.toLowerCase()] ?? roomMetaDict.default;
@@ -254,7 +256,7 @@ export default function FloorPlanRenderer({ plan, activeRoomId, onRoomHover, pre
                   key={f}
                   onClick={() => setSelectedFloor(f)}
                   className={`min-h-[38px] px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                    selectedFloor === f
+                    activeFloor === f
                       ? "bg-sky-500 text-white shadow-sm"
                       : "text-slate-300 hover:text-white hover:bg-white/5"
                   }`}
@@ -503,7 +505,7 @@ export default function FloorPlanRenderer({ plan, activeRoomId, onRoomHover, pre
         </div>
 
         <span className="text-xs text-slate-300 font-mono font-semibold ml-auto">
-          {floorRooms.length} rooms on {floorLabel(selectedFloor)}
+          {floorRooms.length} rooms on {floorLabel(activeFloor)}
         </span>
       </div>
     </div>

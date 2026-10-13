@@ -38,7 +38,8 @@ export default function Dashboard({ onSelectPlan }) {
   };
 
   const copyShareLink = (planId) => {
-    const shareUrl = `${window.location.origin}/homeplanner/plan/${planId}`;
+    const basePath = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+    const shareUrl = `${window.location.origin}${basePath}/plan/${planId}`;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {

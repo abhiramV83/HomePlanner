@@ -25,6 +25,12 @@ async def save_plan(plan: PlanDocument):
         except Exception:
             raise HTTPException(400, "Invalid plan ID format")
 
+        existing = await plans_collection.find_one({"_id": obj_id})
+        if existing and "createdAt" in existing:
+            plan_dict["createdAt"] = existing["createdAt"]
+        else:
+            plan_dict["createdAt"] = now
+
         result = await plans_collection.replace_one(
             {"_id": obj_id},
             plan_dict

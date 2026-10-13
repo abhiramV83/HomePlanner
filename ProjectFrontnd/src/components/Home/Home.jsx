@@ -513,6 +513,26 @@ export default function Home() {
                   <span>Save Blueprint</span>
                 </button>
 
+                {planId && (
+                  <button
+                    onClick={() => {
+                      const basePath = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
+                      const shareUrl = `${window.location.origin}${basePath}/plan/${planId}`;
+                      navigator.clipboard.writeText(shareUrl).then(() => {
+                        showToast("Public blueprint link copied to clipboard!");
+                      }).catch(() => {
+                        alert("Failed to copy link.");
+                      });
+                    }}
+                    className="bg-white/5 hover:bg-white/10 text-white text-xs font-bold px-4 py-2.5 rounded-xl border border-white/15 transition-all shadow-md flex items-center gap-2 min-h-[44px]"
+                    aria-label="Copy Public Share Link"
+                    title="Copy Public Share Link"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                    <span>Share</span>
+                  </button>
+                )}
+
                 <button
                   onClick={handleExportPDF}
                   disabled={exporting}

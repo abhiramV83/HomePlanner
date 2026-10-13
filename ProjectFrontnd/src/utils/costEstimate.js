@@ -12,9 +12,10 @@ export const CITY_RATES = {
 export function estimateCost(rooms = [], cityKey = "Bangalore") {
   const cityData = CITY_RATES[cityKey] || CITY_RATES.Bangalore;
   const rate = cityData.rate;
+  const safeRooms = Array.isArray(rooms) ? rooms : [];
 
   let totalCarpetArea = 0;
-  const roomBreakdown = rooms.map((room) => {
+  const roomBreakdown = safeRooms.map((room) => {
     const area = room.width * room.length;
     totalCarpetArea += area;
     const cost = area * rate;

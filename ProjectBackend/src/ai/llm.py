@@ -136,10 +136,17 @@ def generate_response(prompt: str) -> str:
     raise RuntimeError("No LLM provider available to generate response.")
 
 
+def _safe_str(val) -> str:
+    try:
+        return str(val).encode("ascii", errors="replace").decode("ascii")
+    except Exception:
+        return "<unprintable>"
+
+
 def generate_structured_json(system_prompt: str, user_prompt: str) -> dict:
     """
     Primary structured JSON generator with automatic fallback across providers.
-    Tries Groq (qwen/qwen3.8-27b) -> Falls back to Google Gemini (gemini-2.5-flash).
+    Tries Groq -> Falls back to Google Gemini (gemini-2.5-flash).
     """
     errors = []
 
@@ -148,15 +155,15 @@ def generate_structured_json(system_prompt: str, user_prompt: str) -> dict:
         try:
             return _call_groq_structured(system_prompt, user_prompt)
         except Exception as e:
-            print(f"[LLM] Groq structured generation failed ({e}). Attempting fallback...")
-            errors.append(f"Groq error: {str(e)}")
+            print(f"[LLM] Groq structured generation failed ({_safe_str(e)}). Attempting fallback...")
+            errors.append(f"Groq error: {_safe_str(e)}")
 
     # 2. Try Gemini
     if _gemini_available:
         try:
             return _call_gemini_structured(system_prompt, user_prompt)
         except Exception as e:
-            print(f"[LLM] Gemini structured generation failed ({e}).")
-            errors.append(f"Gemini error: {str(e)}")
+            print(f"[LLM] Gemini structured generation failed ({_safe_str(e)}).")
+            errors.append(f"Gemini error: {_safe_str(e)}")
 
     raise RuntimeError(f"All LLM providers failed to generate valid structured JSON. Errors: {' | '.join(errors)}")
