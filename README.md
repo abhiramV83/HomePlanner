@@ -536,6 +536,24 @@ cd HomePlanner
 
 ## 🧭 Vastu Shastra Assessment Engine
 
+### Vedic Spatial Harmony Principles
+
+Vastu Shastra balances the **Pancha Maha Bhoota** (Five Fundamental Elements) across the building layout:
+
+```
+                  NORTH [Water / Wealth / Kubera]
+        Northwest (Vayu / Air)   |   Northeast (Ishanya / Water)
+       --------------------------+--------------------------
+        Southwest (Nairutya / Earth)|  Southeast (Agni / Fire)
+                  SOUTH [Earth / Yama / Stability]
+```
+
+- **Ishanya (Northeast)**: Governed by the element of Water (*Jala*). Auspicious for meditation rooms, prayer spaces, open sit-outs, and underground water storage. Heavy structures here are avoided.
+- **Agni (Southeast)**: Governed by Fire (*Tejas*). Auspicious location for kitchens, cooking hobs, transformers, and electrical distribution boards.
+- **Nairutya (Southwest)**: Governed by Earth (*Prithvi*). Heavy master bedroom, overhead water tanks, and load-bearing structures must reside here for grounding and household stability.
+- **Vayu (Northwest)**: Governed by Air (*Vayu*). Movement zone ideal for guest bedrooms, children's study rooms, toilets, and vehicle parking.
+
+
 The Vastu engine ([vastu.js](file:///c:/dump/HomePlanner/ProjectFrontnd/src/utils/vastu.js)) evaluates the spatial placement of each room based on Vedic Vastu Purusha Mandala principles:
 
 1. **Centroid Coordinates**:
