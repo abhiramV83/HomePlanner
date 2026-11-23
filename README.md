@@ -449,6 +449,19 @@ Content-Type: application/json
 ```
 
 ### 2. Conversational CAD Refinement
+
+#### POST /plans/refine Detailed Specification
+
+- **Method**: `POST`
+- **Path**: `/plans/refine`
+- **Description**: Mutates an existing validated floor plan via natural language feedback while preserving unchanged geometry and structural constraints.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `current_plan` | `PlanModel` | Yes | Existing architectural plan object including `meta`, `rooms`, and `openings` |
+| `user_message` | `string` | Yes | Modification command (e.g., *"Make master bedroom 16x18 and relocate to SW"*) |
+| `chat_history` | `array[ChatMessage]` | No | Chronological array of `{ role: "user" | "assistant", content: string }` objects |
+
 ```http
 POST /plans/refine
 Content-Type: application/json
