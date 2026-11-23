@@ -3,11 +3,24 @@ import { estimateCost } from "./costEstimate";
 import { computeOverallVastuScore, evaluateVastu } from "./vastu";
 
 /**
- * Direct High-DPI Canvas Blueprint Renderer.
+ * Returns a human-friendly label for a floor index.
+ */
+export function getFloorLabel(floorNumber) {
+  const f = typeof floorNumber === "number" ? floorNumber : 0;
+  if (f === 0) return "Ground Floor";
+  if (f === 1) return "First Floor";
+  if (f === 2) return "Second Floor";
+  if (f === 3) return "Third Floor";
+  if (f === 4) return "Fourth Floor";
+  return `Floor ${f + 1}`;
+}
+
+/**
+ * Direct High-DPI Canvas Blueprint Renderer for a specific floor.
  * Deterministically rasterizes the floorplan into a full-page architectural blueprint.
  * Zero DOM dependencies, zero CSS parsing bugs, zero network calls, 100% reliable.
  */
-function renderBlueprintToCanvas(plan) {
+export function renderBlueprintToCanvas(plan, targetFloor = 0) {
   const meta = plan?.meta || {};
   const rooms = Array.isArray(plan?.rooms) ? plan.rooms : [];
   const openings = Array.isArray(plan?.openings) ? plan.openings : [];
@@ -87,9 +100,18 @@ function renderBlueprintToCanvas(plan) {
     default:   { fill: "rgba(15, 23, 42, 0.60)",  stroke: "#7dd3fc" },
   };
 
-  // Filter to Ground floor (or floor 0) or all rooms
-  const floor0Rooms = rooms.filter((r) => (r.floor ?? 0) === 0);
-  const roomsToRender = floor0Rooms.length > 0 ? floor0Rooms : rooms;
+  // Filter rooms strictly to the targeted floor
+  const roomsToRender = rooms.filter((r) => (r.floor ?? 0) === targetFloor);
+
+  if (roomsToRender.length === 0) {
+    ctx.save();
+    ctx.font = "bold 26px 'Segoe UI', sans-serif";
+    ctx.fillStyle = "rgba(148, 163, 184, 0.5)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Open / Unpartitioned Floor Layout", originX + drawW / 2, originY + drawH / 2);
+    ctx.restore();
+  }
 
   roomsToRender.forEach((room) => {
     const rx = originX + room.x * scale;
@@ -146,9 +168,8 @@ function renderBlueprintToCanvas(plan) {
     }
   });
 
-  // Openings (Windows and Doors)
-  const floor0Openings = openings.filter((o) => (o.floor ?? 0) === 0);
-  const openingsToRender = floor0Openings.length > 0 ? floor0Openings : openings;
+  // Openings (Windows and Doors) filtered for this floor
+  const openingsToRender = openings.filter((o) => (o.floor ?? 0) === targetFloor);
 
   openingsToRender.forEach((op) => {
     const ox = originX + op.x * scale;
@@ -289,11 +310,44 @@ function renderBlueprintToCanvas(plan) {
 
   ctx.restore();
 
+  // Floor Identification Header in Top-Left of Blueprint Canvas
+  const floorName = getFloorLabel(targetFloor);
+  const floorArea = roomsToRender.reduce((sum, r) => sum + (r.width * r.length), 0);
+
+  ctx.save();
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+
+  const badgeX = Math.max(80, originX);
+  const badgeY = 95;
+  const badgeText = `${floorName.toUpperCase()} BLUEPRINT`;
+  ctx.font = "bold 28px 'Segoe UI', sans-serif";
+  const badgeW = ctx.measureText(badgeText).width + 36;
+  const badgeH = 46;
+
+  ctx.fillStyle = "rgba(14, 165, 233, 0.15)";
+  ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 2.5;
+  ctx.strokeRect(badgeX, badgeY, badgeW, badgeH);
+
+  ctx.fillStyle = "#38bdf8";
+  ctx.fillText(badgeText, badgeX + 18, badgeY + badgeH / 2);
+
+  ctx.font = "600 20px 'Segoe UI', sans-serif";
+  ctx.fillStyle = "#94a3b8";
+  ctx.fillText(
+    `${roomsToRender.length} Spaces  •  ${Math.round(floorArea)} sq ft Carpet Area`,
+    badgeX + badgeW + 24,
+    badgeY + badgeH / 2
+  );
+  ctx.restore();
+
   // Bottom-right watermark tag
   ctx.font = "bold 16px 'Segoe UI', sans-serif";
   ctx.fillStyle = "rgba(148, 163, 184, 0.4)";
   ctx.textAlign = "right";
-  ctx.fillText("HOMEPLANNER PRO CAD • 1:100 ARCHITECTURAL SCALE", canvasWidth - 60, canvasHeight - 50);
+  ctx.fillText(`HOMEPLANNER PRO CAD • ${floorName.toUpperCase()} • 1:100 ARCHITECTURAL SCALE`, canvasWidth - 60, canvasHeight - 50);
 
   return canvas.toDataURL("image/png");
 }
@@ -318,10 +372,10 @@ function triggerDirectDownload(blob, filename) {
 }
 
 /**
- * Generates an executive 3-page architectural specification PDF:
- * - Page 1: Project Name on top + FULL-PAGE crystal clear CAD Blueprint drawing + legend.
- * - Page 2: Executive Project Summary & Detailed Civil Construction Cost Sheet.
- * - Page 3: Vastu Purusha Compliance Audit, spatial guidelines, and engineering schedule.
+ * Generates an executive multi-page architectural specification PDF:
+ * - Pages 1 to N: FULL-PAGE crystal clear CAD Blueprint drawing for EACH FLOOR on separate pages.
+ * - Page N+1: Executive Project Summary & Detailed Civil Construction Cost Sheet.
+ * - Page N+2: Vastu Purusha Compliance Audit, spatial guidelines, and engineering schedule.
  */
 export async function exportPlanToPDF(plan) {
   if (!plan) {
@@ -342,13 +396,27 @@ export async function exportPlanToPDF(plan) {
     const formatCost = (num) => `INR ${Math.round(num).toLocaleString("en-IN")}`;
     const vastuScore = computeOverallVastuScore(rooms, plotW, plotL, meta.northDirection || 0);
 
-    // 1. Generate full-resolution blueprint canvas
-    const imgData = renderBlueprintToCanvas(plan);
-    if (!imgData) {
-      throw new Error("Canvas context could not be created");
+    // Identify all unique floors to render across the project
+    const rawFloors = rooms.map((r) => (typeof r.floor === "number" ? r.floor : 0));
+    let floorsToRender = Array.from(new Set(rawFloors)).sort((a, b) => a - b);
+    if (floorsToRender.length === 0) {
+      floorsToRender = [0];
+    }
+    // Also respect meta.totalFloors if it defines more levels
+    if (meta.totalFloors && meta.totalFloors > floorsToRender.length) {
+      for (let f = 0; f < meta.totalFloors; f++) {
+        if (!floorsToRender.includes(f)) {
+          floorsToRender.push(f);
+        }
+      }
+      floorsToRender.sort((a, b) => a - b);
     }
 
-    // 2. Initialize jsPDF (A4 Portrait: 210mm x 297mm)
+    const totalBlueprintPages = floorsToRender.length;
+    const totalPages = totalBlueprintPages + 2; // +1 for Summary & Cost Sheet, +1 for Vastu Purusha Audit
+    const issuedDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+    // Initialize jsPDF (A4 Portrait: 210mm x 297mm)
     const pdf = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -356,91 +424,112 @@ export async function exportPlanToPDF(plan) {
     });
 
     // =========================================================================
-    // PAGE 1: PROJECT NAME ON TOP + FULL PAGE CRYSTAL CLEAR ARCHITECTURAL PLAN
+    // PAGES 1 to N: SEPARATE FULL-PAGE CAD BLUEPRINT DRAWINGS FOR EACH FLOOR
     // =========================================================================
-    // Top Studio Banner
-    pdf.setFillColor(15, 23, 42); // slate-900
-    pdf.rect(0, 0, 210, 36, "F");
+    floorsToRender.forEach((floorNum, idx) => {
+      if (idx > 0) {
+        pdf.addPage();
+      }
 
-    pdf.setTextColor(56, 189, 248); // sky-400
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(8.5);
-    pdf.text("HOMEPLANNER ARCHITECTURAL STUDIO  •  PRO CAD BLUEPRINT", 15, 11);
+      const pageNum = idx + 1;
+      const floorName = getFloorLabel(floorNum);
+      const floorRooms = rooms.filter((r) => (r.floor ?? 0) === floorNum);
+      const floorArea = floorRooms.reduce((sum, r) => sum + (r.width * r.length), 0);
 
-    // Prominent Project Title on Top
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(15);
-    const titleText = meta.title || "Luxury Residence CAD Layout";
-    const truncatedTitle = titleText.length > 55 ? titleText.slice(0, 52) + "..." : titleText;
-    pdf.text(truncatedTitle, 15, 19);
+      // 1. Generate full-resolution blueprint canvas for this floor
+      const imgData = renderBlueprintToCanvas(plan, floorNum);
+      if (!imgData) {
+        throw new Error(`Canvas context could not be created for ${floorName}`);
+      }
 
-    // Subtitle Metadata Line
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(8);
-    pdf.setTextColor(148, 163, 184); // slate-400
-    pdf.text(
-      `Style: ${meta.style || "Modern Luxury"}   |   Plot: ${plotW}ft × ${plotL}ft (${plotW * plotL} sq ft)   |   ${meta.totalFloors || 1} Floor(s)   |   Carpet Area: ${Math.round(totalArea)} sqft`,
-      15,
-      27
-    );
+      // Top Studio Banner
+      pdf.setFillColor(15, 23, 42); // slate-900
+      pdf.rect(0, 0, 210, 36, "F");
 
-    // Right-aligned Issue Date & ID
-    pdf.setFontSize(7.5);
-    pdf.setTextColor(203, 213, 225);
-    pdf.text(`Issued: ${new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}`, 195, 12, { align: "right" });
-    pdf.text(`North Offset: ${meta.northDirection || 0}°`, 195, 18, { align: "right" });
-    pdf.text("STATUS: APPROVED FOR ESTIMATION", 195, 27, { align: "right" });
+      pdf.setTextColor(56, 189, 248); // sky-400
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8.5);
+      pdf.text("HOMEPLANNER ARCHITECTURAL STUDIO  •  PRO CAD BLUEPRINT", 15, 11);
 
-    // FULL PAGE CLEAR CAD BLUEPRINT (Massive presentation)
-    // Frame: width 186mm, height 208mm (from y=40 to y=248)
-    const bpX = 12;
-    const bpY = 40;
-    const bpW = 186;
-    const bpH = 208;
+      // Prominent Project Title + Level Indicator on Top
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(14);
+      const titleText = meta.title || "Luxury Residence CAD Layout";
+      const displayTitle = `${titleText} — ${floorName.toUpperCase()}`;
+      const truncatedTitle = displayTitle.length > 52 ? displayTitle.slice(0, 49) + "..." : displayTitle;
+      pdf.text(truncatedTitle, 15, 19);
 
-    pdf.setFillColor(7, 13, 24); // slate-950 blueprint background
-    pdf.rect(bpX, bpY, bpW, bpH, "F");
-    pdf.setDrawColor(56, 189, 248); // sky-400 border
-    pdf.setLineWidth(0.6);
-    pdf.rect(bpX, bpY, bpW, bpH, "S");
+      // Subtitle Metadata Line
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(148, 163, 184); // slate-400
+      pdf.text(
+        `Level: ${floorName} (${floorRooms.length} spaces)   |   Plot: ${plotW}ft × ${plotL}ft (${plotW * plotL} sq ft)   |   Floor Carpet: ${Math.round(floorArea)} sq ft   |   Total: ${floorsToRender.length} Floor(s)`,
+        15,
+        27
+      );
 
-    // Add High-Resolution Blueprint Image centered inside the box
-    pdf.addImage(imgData, "PNG", bpX + 1, bpY + 1, bpW - 2, bpH - 2, undefined, "FAST");
+      // Right-aligned Issue Date & ID
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(203, 213, 225);
+      pdf.text(`Issued: ${issuedDate}`, 195, 12, { align: "right" });
+      pdf.text(`North Offset: ${meta.northDirection || 0}°`, 195, 18, { align: "right" });
+      pdf.setTextColor(56, 189, 248);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`${floorName.toUpperCase()} BLUEPRINT`, 195, 27, { align: "right" });
 
-    // Bottom Blueprint Legend & Scale Strip (y=251 to y=268)
-    pdf.setFillColor(248, 250, 252);
-    pdf.rect(12, 251, 186, 17, "F");
-    pdf.setDrawColor(226, 232, 240);
-    pdf.setLineWidth(0.3);
-    pdf.rect(12, 251, 186, 17, "S");
+      // FULL PAGE CLEAR CAD BLUEPRINT (Massive presentation)
+      // Frame: width 186mm, height 208mm (from y=40 to y=248)
+      const bpX = 12;
+      const bpY = 40;
+      const bpW = 186;
+      const bpH = 208;
 
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(8);
-    pdf.setTextColor(15, 23, 42);
-    pdf.text("BLUEPRINT LEGEND & CAD SYMBOLOGY:", 16, 258);
+      pdf.setFillColor(7, 13, 24); // slate-950 blueprint background
+      pdf.rect(bpX, bpY, bpW, bpH, "F");
+      pdf.setDrawColor(56, 189, 248); // sky-400 border
+      pdf.setLineWidth(0.6);
+      pdf.rect(bpX, bpY, bpW, bpH, "S");
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7.5);
-    pdf.setTextColor(71, 85, 105);
-    pdf.text("[  ] Standard Room Boundary", 16, 264);
-    pdf.text("--- Dotted: 90° Door Swing Arc", 65, 264);
-    pdf.text("=== Double: Glazed Window Opening", 118, 264);
-    pdf.text(`^ North Needle: ${meta.northDirection || 0}° Bearing`, 164, 264);
+      // Add High-Resolution Blueprint Image centered inside the box
+      pdf.addImage(imgData, "PNG", bpX + 1, bpY + 1, bpW - 2, bpH - 2, undefined, "FAST");
 
-    // Page 1 Footer
-    pdf.setDrawColor(226, 232, 240);
-    pdf.line(12, 280, 198, 280);
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(7.5);
-    pdf.setTextColor(148, 163, 184);
-    pdf.text("Page 1 of 3  •  Architectural Floor Plan Blueprint Sheet", 12, 286);
-    pdf.text("HomePlanner Pro CAD Systems  |  All Dimensions in Imperial Feet (ft)", 198, 286, { align: "right" });
+      // Bottom Blueprint Legend & Scale Strip (y=251 to y=268)
+      pdf.setFillColor(248, 250, 252);
+      pdf.rect(12, 251, 186, 17, "F");
+      pdf.setDrawColor(226, 232, 240);
+      pdf.setLineWidth(0.3);
+      pdf.rect(12, 251, 186, 17, "S");
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(8);
+      pdf.setTextColor(15, 23, 42);
+      pdf.text(`BLUEPRINT LEGEND & CAD SYMBOLOGY (${floorName.toUpperCase()}):`, 16, 258);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(71, 85, 105);
+      pdf.text("[  ] Standard Room Boundary", 16, 264);
+      pdf.text("--- Dotted: 90° Door Swing Arc", 65, 264);
+      pdf.text("=== Double: Glazed Window Opening", 118, 264);
+      pdf.text(`^ North Needle: ${meta.northDirection || 0}° Bearing`, 164, 264);
+
+      // Page Footer
+      pdf.setDrawColor(226, 232, 240);
+      pdf.line(12, 280, 198, 280);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(7.5);
+      pdf.setTextColor(148, 163, 184);
+      pdf.text(`Page ${pageNum} of ${totalPages}  •  ${floorName} Architectural Blueprint Sheet`, 12, 286);
+      pdf.text("HomePlanner Pro CAD Systems  |  All Dimensions in Imperial Feet (ft)", 198, 286, { align: "right" });
+    });
 
     // =========================================================================
-    // PAGE 2: EXECUTIVE PROJECT SUMMARY & CIVIL CONSTRUCTION COST SHEET
+    // PAGE N+1: EXECUTIVE PROJECT SUMMARY & CIVIL CONSTRUCTION COST SHEET
     // =========================================================================
     pdf.addPage();
+    const summaryPageNum = totalBlueprintPages + 1;
 
     // Top Header Banner
     pdf.setFillColor(15, 23, 42); // slate-900
@@ -455,6 +544,7 @@ export async function exportPlanToPDF(plan) {
     pdf.setFontSize(13);
     pdf.text("EXECUTIVE PROJECT SUMMARY & CIVIL COST SHEET", 15, 19);
 
+    const titleText = meta.title || "Luxury Residence CAD Layout";
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(8);
     pdf.setTextColor(148, 163, 184);
@@ -477,7 +567,7 @@ export async function exportPlanToPDF(plan) {
     pdf.setTextColor(71, 85, 105);
     const summaryDesc =
       meta.description ||
-      `This architectural residence is planned on a ${plotW}ft × ${plotL}ft plot (${plotW * plotL} sq ft). The layout optimizes spatial zoning between public social zones (living, dining) and private sanctuaries (bedrooms, bathrooms). Circulation pathways have been designed for zero wasted passage area, maximizing natural daylight penetration and natural cross-ventilation.`;
+      `This architectural residence is planned on a ${plotW}ft × ${plotL}ft plot (${plotW * plotL} sq ft) spanning ${floorsToRender.length} level(s). The layout optimizes spatial zoning between public social zones (living, dining) and private sanctuaries (bedrooms, bathrooms). Circulation pathways have been designed for zero wasted passage area, maximizing natural daylight penetration and natural cross-ventilation.`;
     const descLines = pdf.splitTextToSize(summaryDesc, 176);
     pdf.text(descLines, 17, 46);
 
@@ -560,14 +650,15 @@ export async function exportPlanToPDF(plan) {
     pdf.setFontSize(7.5);
     pdf.text("Space / Room Name", 16, tableY + 5);
     pdf.text("Level", 72, tableY + 5);
-    pdf.text("Dimensions", 95, tableY + 5);
-    pdf.text("Carpet Area", 130, tableY + 5);
+    pdf.text("Dimensions", 100, tableY + 5);
+    pdf.text("Carpet Area", 132, tableY + 5);
     pdf.text("Civil Cost Allocation", 192, tableY + 5, { align: "right" });
 
     // Table Data Rows
     let rowY = tableY + 7.5;
-    const rowH = 7;
-    const roomsToDisplay = rooms.slice(0, 17);
+    const maxRoomsOnPage = 20;
+    const rowH = rooms.length > 15 ? 5.8 : 6.8;
+    const roomsToDisplay = rooms.slice(0, maxRoomsOnPage);
 
     roomsToDisplay.forEach((room, idx) => {
       const rArea = room.width * room.length;
@@ -580,22 +671,30 @@ export async function exportPlanToPDF(plan) {
       pdf.line(12, rowY + rowH, 198, rowY + rowH);
 
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(7.5);
+      pdf.setFontSize(7);
       pdf.setTextColor(30, 41, 59);
-      pdf.text(room.name, 16, rowY + 4.8);
+      pdf.text(room.name, 16, rowY + rowH * 0.65);
 
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      pdf.text(`Floor ${room.floor ?? 0}`, 72, rowY + 4.8);
-      pdf.text(`${Math.round(room.width)}' × ${Math.round(room.length)}'`, 95, rowY + 4.8);
-      pdf.text(`${Math.round(rArea)} sq ft`, 130, rowY + 4.8);
+      pdf.text(getFloorLabel(room.floor ?? 0), 72, rowY + rowH * 0.65);
+      pdf.text(`${Math.round(room.width)}' × ${Math.round(room.length)}'`, 100, rowY + rowH * 0.65);
+      pdf.text(`${Math.round(rArea)} sq ft`, 132, rowY + rowH * 0.65);
 
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(15, 23, 42);
-      pdf.text(formatCost(rCost), 192, rowY + 4.8, { align: "right" });
+      pdf.text(formatCost(rCost), 192, rowY + rowH * 0.65, { align: "right" });
 
       rowY += rowH;
     });
+
+    if (rooms.length > maxRoomsOnPage) {
+      pdf.setFont("helvetica", "italic");
+      pdf.setFontSize(6.5);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(`+ ${rooms.length - maxRoomsOnPage} additional spaces accounted for in overall project totals below`, 16, rowY + 4.5);
+      rowY += 6;
+    }
 
     // Total Summary Row
     pdf.setFillColor(241, 245, 249);
@@ -607,23 +706,24 @@ export async function exportPlanToPDF(plan) {
     pdf.setFontSize(8);
     pdf.setTextColor(15, 23, 42);
     pdf.text("TOTAL MEASURED CARPET AREA & BASE BUDGET", 16, rowY + 5.2);
-    pdf.text(`${Math.round(totalArea)} sq ft`, 130, rowY + 5.2);
+    pdf.text(`${Math.round(totalArea)} sq ft`, 132, rowY + 5.2);
     pdf.setTextColor(16, 185, 129);
     pdf.text(formatCost(cost.totalCost), 192, rowY + 5.2, { align: "right" });
 
-    // Page 2 Footer
+    // Page Summary Footer
     pdf.setDrawColor(226, 232, 240);
     pdf.line(12, 280, 198, 280);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7.5);
     pdf.setTextColor(148, 163, 184);
-    pdf.text("Page 2 of 3  •  Executive Project Summary & Civil Construction Budget", 12, 286);
+    pdf.text(`Page ${summaryPageNum} of ${totalPages}  •  Executive Project Summary & Civil Construction Budget`, 12, 286);
     pdf.text("HomePlanner Pro CAD Systems  |  Rates verified with Bangalore Index", 198, 286, { align: "right" });
 
     // =========================================================================
-    // PAGE 3: VASTU PURUSHA COMPLIANCE AUDIT & ENGINEERING SCHEDULE
+    // PAGE N+2: VASTU PURUSHA COMPLIANCE AUDIT & ENGINEERING SCHEDULE
     // =========================================================================
     pdf.addPage();
+    const vastuPageNum = totalBlueprintPages + 2;
 
     // Top Header Banner
     pdf.setFillColor(15, 23, 42); // slate-900
@@ -679,7 +779,7 @@ export async function exportPlanToPDF(plan) {
     pdf.setFontSize(8);
     pdf.setTextColor(71, 85, 105);
     const vastuSummary =
-      `This layout has been evaluated against ancient Vedic Vastu Shastra architectural canons. Spatial placements are audited relative to True North (${meta.northDirection || 0}° bearing). Auspicious quadrants like Northeast (Ishanya) for water/spiritual purity, Southeast (Agni) for kitchen fire elements, and Southwest (Nairutya) for master bedroom structural stability ensure an optimal balance of cosmic energy and thermal comfort.`;
+      `This layout has been evaluated against ancient Vedic Vastu Shastra architectural canons across all ${floorsToRender.length} level(s). Spatial placements are audited relative to True North (${meta.northDirection || 0}° bearing). Auspicious quadrants like Northeast (Ishanya) for water/spiritual purity, Southeast (Agni) for kitchen fire elements, and Southwest (Nairutya) for master bedroom structural stability ensure an optimal balance of cosmic energy and thermal comfort.`;
     const vLines = pdf.splitTextToSize(vastuSummary, 125);
     pdf.text(vLines, 68, 48);
 
@@ -697,15 +797,16 @@ export async function exportPlanToPDF(plan) {
     pdf.setTextColor(255, 255, 255);
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(7.5);
-    pdf.text("Room Name", 16, vTableY + 5);
-    pdf.text("Compass Quadrant", 60, vTableY + 5);
-    pdf.text("Vedic Architectural Guideline", 102, vTableY + 5);
+    pdf.text("Room Name & Level", 16, vTableY + 5);
+    pdf.text("Compass Quadrant", 72, vTableY + 5);
+    pdf.text("Vedic Architectural Guideline", 108, vTableY + 5);
     pdf.text("Compliance Rating", 192, vTableY + 5, { align: "right" });
 
     // Data Rows
     let vRowY = vTableY + 7.5;
-    const vRowH = 8.5;
-    const vastuRooms = rooms.slice(0, 13);
+    const maxVastuRooms = 15;
+    const vRowH = rooms.length > 11 ? 7.2 : 8.2;
+    const vastuRooms = rooms.slice(0, maxVastuRooms);
 
     vastuRooms.forEach((room, idx) => {
       const vRes = evaluateVastu(room, plotW, plotL, meta.northDirection || 0);
@@ -717,37 +818,38 @@ export async function exportPlanToPDF(plan) {
       pdf.line(12, vRowY + vRowH, 198, vRowY + vRowH);
 
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(7.5);
+      pdf.setFontSize(7);
       pdf.setTextColor(30, 41, 59);
-      pdf.text(room.name, 16, vRowY + 5.5);
+      const floorShort = getFloorLabel(room.floor ?? 0).replace(" Floor", "");
+      const roomTitle = `${room.name} (${floorShort})`;
+      pdf.text(roomTitle.length > 24 ? roomTitle.slice(0, 22) + "..." : roomTitle, 16, vRowY + vRowH * 0.65);
 
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      pdf.text(`Zone: ${vRes.zone}`, 60, vRowY + 5.5);
+      pdf.text(`Zone: ${vRes.zone}`, 72, vRowY + vRowH * 0.65);
 
-      // Truncate guideline description
-      const guideText = (vRes.description || `Optimized for ${vRes.zone} quadrant alignment.`).slice(0, 60) + "...";
-      pdf.setFontSize(7);
-      pdf.text(guideText, 102, vRowY + 5.5);
+      const guideText = (vRes.description || `Optimized for ${vRes.zone} quadrant alignment.`).slice(0, 50) + "...";
+      pdf.setFontSize(6.8);
+      pdf.text(guideText, 108, vRowY + vRowH * 0.65);
 
       // Status Badge
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(7.5);
+      pdf.setFontSize(7);
       if (vRes.rating === "green") {
         pdf.setTextColor(22, 101, 52);
-        pdf.text("COMPLIANT", 192, vRowY + 5.5, { align: "right" });
+        pdf.text("COMPLIANT", 192, vRowY + vRowH * 0.65, { align: "right" });
       } else if (vRes.rating === "amber") {
         pdf.setTextColor(180, 83, 9);
-        pdf.text("ACCEPTABLE", 192, vRowY + 5.5, { align: "right" });
+        pdf.text("ACCEPTABLE", 192, vRowY + vRowH * 0.65, { align: "right" });
       } else {
         pdf.setTextColor(185, 28, 28);
-        pdf.text("REVISION", 192, vRowY + 5.5, { align: "right" });
+        pdf.text("REVISION", 192, vRowY + vRowH * 0.65, { align: "right" });
       }
 
       vRowY += vRowH;
     });
 
-    // SECTION 3: ENGINEERING NOTES & SIGN-OFF BLOCK (y=215 to y=274)
+    // SECTION 3: ENGINEERING NOTES & SIGN-OFF BLOCK (y=212 to y=274)
     pdf.setFillColor(248, 250, 252);
     pdf.rect(12, 212, 186, 62, "F");
     pdf.setDrawColor(226, 232, 240);
@@ -763,7 +865,7 @@ export async function exportPlanToPDF(plan) {
     pdf.setTextColor(71, 85, 105);
     pdf.text("1. Setbacks & FAR: All setback distances and Floor Area Ratios must be cross-verified against local municipal bylaws.", 16, 227);
     pdf.text("2. Structural Validation: Column spans, beam depths, and foundation footings must be certified by a licensed structural engineer.", 16, 233);
-    pdf.text("3. Vastu Harmonization: Non-compliant zones can be harmonized using pyramid yantras, copper plates, or color therapy.", 16, 239);
+    pdf.text("3. Multi-Floor MEP: Vertical plumbing shafts, stair cores, and load-bearing columns must align across all storeys.", 16, 239);
     pdf.text("4. Civil Multipliers: Actual construction costs vary with interior grade, sanitary fixtures, and soil bearing capacity.", 16, 245);
 
     // Sign-off Lines
@@ -777,13 +879,13 @@ export async function exportPlanToPDF(plan) {
     pdf.text("PRINCIPAL ARCHITECT / CAD ENGINEER", 16, 269);
     pdf.text("CLIENT ACKNOWLEDGMENT & SIGN-OFF", 125, 269);
 
-    // Page 3 Footer
+    // Page Footer
     pdf.setDrawColor(226, 232, 240);
     pdf.line(12, 280, 198, 280);
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(7.5);
     pdf.setTextColor(148, 163, 184);
-    pdf.text("Page 3 of 3  •  Vastu Purusha Compliance & Engineering Schedule", 12, 286);
+    pdf.text(`Page ${vastuPageNum} of ${totalPages}  •  Vastu Purusha Compliance & Engineering Schedule`, 12, 286);
     pdf.text("HomePlanner Pro CAD Systems  |  Certified Vedic & Structural Document", 198, 286, { align: "right" });
 
     // =========================================================================
