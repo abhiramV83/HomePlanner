@@ -152,6 +152,15 @@ Every raw coordinate vector emitted by the AI inference layer passes through the
   - **Option A (Open-Concept Flow)**: Prioritizes fluid connectivity, expanded social spaces, and continuous sightlines.
   - **Option B (Smart Functional Efficiency)**: Compact, zero-waste circulation with balanced bedroom footprints.
   - **Option C (Luxury Executive Villa)**: Expansive master suite, dedicated foyer, formal dining, and private family lounges.
+
+#### Layout Generation Heuristics & Spatial Optimization
+
+| Variant | Architectural Philosophy | Circulation Strategy | Ideal Persona |
+|---|---|---|---|
+| **Option A: Open-Concept Flow** | Maximizes continuous visual sightlines, unified living-dining-kitchen pavilion, perimeter bedrooms | Central hallway eliminated; $< 8\%$ circulation overhead | Modern families, social entertaining |
+| **Option B: Smart Functional Efficiency** | Compact private zones, zoned acoustics, compartmentalized wet kitchen, optimized storage | Spine corridor with direct access to all quarters | Compact urban plots, cost-optimized construction |
+| **Option C: Luxury Executive Villa** | Grand foyer entrance, secluded master suite wing, double-height living room, formal dining | Dual circulation paths (service vs resident); $> 15\%$ circulation allowance | High-end custom homes, luxury residences |
+
 - Side-by-side comparison matrix showing carpet area, built-up area, room count, and budget estimates with single-click activation.
 
 ### 3. Interactive CAD Studio Canvas
