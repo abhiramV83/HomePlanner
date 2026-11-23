@@ -130,7 +130,20 @@ flowchart TD
   $$\text{Built-Up Area} = \text{Carpet Area} \times 1.18$$
 - Four-part budget allocation distribution: Structure (50%), Finishes (25%), MEP & Electrical (15%), Municipal Approvals (10%).
 
-### 7. Executive 3-Page CAD PDF Specification Sheet
+### 7. Executive Multi-Floor CAD PDF Specification Sheet
+- **Dynamic Floor Blueprint Pages**:
+  - Automatically identifies all unique floor levels in the architectural plan (Ground Floor, First Floor, etc.).
+  - Emits a dedicated, full-page $2400 \times 2400$ resolution CAD blueprint drawing for every single storey ($186\text{ mm} \times 208\text{ mm}$ printable area).
+  - Prominent Floor Identification Badges on top-left of canvas detailing floor label, space count, and carpet area.
+  - Watermark tag and perimeter scale indicators calibrated to 1:100 architectural standard.
+- **Dynamic Page Numbering**:
+  - Adapts document pagination dynamically based on storey count: $N$ Blueprint Pages + 1 Cost Worksheet Page + 1 Vastu & Structural Schedule Page ($N + 2$ total pages).
+- **Executive Cost & Specification Sheet**:
+  - Narrative architectural design summary, key metric tiles (FAR, carpet vs built-up area), regional rate calculations, and space-by-space civil cost allocation matrix.
+- **Vastu Purusha Compliance & Engineering Schedule**:
+  - Large Harmony Scorecard ($0-100$), multi-floor space compliance ratings, and certified sign-off blocks for Principal Architect and Client acknowledgment.
+  - Multi-floor MEP alignment guidelines (vertical plumbing shafts, load-bearing column alignment, and staircase cores).
+- **Zero URL Conflicts**: Rendered directly in memory using HTML5 2D Canvas and compiled via `jsPDF`. No `html2canvas` DOM crashes, no iframes, no popup blockers, and no React Router navigation errors.
 - Generates a 300 DPI architectural spec sheet with direct browser file download:
   - **Page 1**: Prominent Plan Name banner, project metadata, full-page crisp CAD blueprint drawing ($2400 \times 2400$ resolution), scale bar, and CAD symbology legend.
   - **Page 2**: Executive Architectural Summary, space-by-space civil cost allocation matrix, and budget distribution cards.
@@ -483,7 +496,28 @@ The civil cost engine ([costEstimate.js](file:///c:/dump/HomePlanner/ProjectFron
 
 ---
 
-## 📄 Executive 3-Page CAD PDF Specification Sheet
+## 📄 Executive Multi-Floor CAD PDF Specification Sheet
+
+The PDF exporter ([pdfExport.js](file:///c:/dump/HomePlanner/ProjectFrontnd/src/utils/pdfExport.js)) produces an executive multi-page architectural specification document adapting dynamically to any building height:
+
+- **Pages 1 to N — Multi-Floor Blueprints**:
+  - Studio branding banner with issuing date and status.
+  - **Floor Identification Header** detailing level name, space count, and net carpet area.
+  - Full-page $2400 \times 2400$ resolution CAD blueprint drawing per storey.
+  - Perimeter dimension ticks, true North compass needle, room area tags, door arcs, and glazed window symbols.
+  - CAD symbology legend bar and 1:100 architectural scale notation.
+
+- **Page N+1 — Executive Project Summary & Civil Cost Sheet**:
+  - Executive architectural design summary and spatial strategy narrative.
+  - Key specification tiles: Plot footprint, gross built-up area, net carpet area, and circulation efficiency ratio.
+  - Civil budget summary highlight card with component allocations.
+  - Detailed room-by-room civil cost allocation table with level, dimensions, square footage, and INR costs.
+
+- **Page N+2 — Vastu Purusha Compliance & Engineering Schedule**:
+  - Large Vastu Harmony Scorecard ($0-100$) with Vedic directional analysis.
+  - Space-by-space Vastu suitability schedule with compass quadrant mapping and compliance ratings (up to 15 spaces with level indicator).
+  - Multi-floor MEP alignment, structural engineering, municipal setback, and FAR compliance disclaimers.
+  - Lead architect and client sign-off lines.
 
 The PDF exporter ([pdfExport.js](file:///c:/dump/HomePlanner/ProjectFrontnd/src/utils/pdfExport.js)) produces an executive 3-page architectural specification document:
 
