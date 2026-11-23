@@ -607,7 +607,19 @@ cd HomePlanner
    ```
 
 4. Configure environment variables:
-   Copy `.env.example` to `.env`:
+   
+### Environment Variables Reference
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `GROQ_API_KEY` | **Yes** | None | API key from Groq Console for ultra-fast Llama/Qwen coordinate generation |
+| `GEMINI_API_KEY` | **Yes** | None | Google AI Studio API key used as automatic failover engine |
+| `MONGO_URI` | No | `mongodb://localhost:27017` | MongoDB connection URI (local instance or MongoDB Atlas cluster) |
+| `DATABASE_NAME` | No | `homeplanner` | Target database collection name for architectural plan persistence |
+| `PORT` | No | `8000` | FastAPI HTTP listening port |
+| `CORS_ORIGINS` | No | `http://localhost:5173,http://localhost:3000` | Permitted cross-origin resource sharing domains |
+
+Copy `.env.example` to `.env`:
    ```bash
    cp .env.example .env
    ```
