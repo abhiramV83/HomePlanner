@@ -164,6 +164,21 @@ Every raw coordinate vector emitted by the AI inference layer passes through the
 - Side-by-side comparison matrix showing carpet area, built-up area, room count, and budget estimates with single-click activation.
 
 ### 3. Interactive CAD Studio Canvas
+
+### CAD Studio Design Tokens & Visual Hierarchy
+
+The interactive SVG canvas rendering engine ([`FloorPlanRenderer.jsx`](file:///c:/dump/HomePlanner/ProjectFrontnd/src/components/FloorPlanRenderer.jsx)) provides professional drafting standards:
+
+| Element | Blueprint Dark (`#070d18`) | Parchment Light (`#f8fafc`) | Stroke / Weight |
+|---|---|---|---|
+| **Exterior Plot Perimeter** | Stroke: `#38bdf8` (2.5px dashed) | Stroke: `#0f172a` (2.5px dashed) | 2.5px |
+| **Living Spaces** | Fill: `rgba(14, 165, 233, 0.12)` | Fill: `rgba(224, 242, 254, 0.60)` | 1.8px Cyan/Slate |
+| **Master & Bed Chambers** | Fill: `rgba(99, 102, 241, 0.12)` | Fill: `rgba(238, 242, 255, 0.60)` | 1.8px Indigo |
+| **Kitchen / Pantry** | Fill: `rgba(249, 115, 22, 0.12)` | Fill: `rgba(255, 237, 213, 0.60)` | 1.8px Amber |
+| **Sanitary & Bath** | Fill: `rgba(20, 184, 166, 0.12)` | Fill: `rgba(204, 251, 241, 0.60)` | 1.8px Teal |
+| **Door Swing Arc** | Radius: `door.width`, 90° arc | Radius: `door.width`, 90° arc | 1.2px Dotted tick |
+| **Glazed Window** | Double parallel lines with glass cyan tint | Double parallel lines with frosted tint | 2.0px Solid |
+
 - **Dual Visual Modes**:
   - **Blueprint Dark (`#070d18`)**: High-contrast slate background with cyan CAD line work, corner registration ticks, and subtle grid lines.
   - **Parchment Light (`#f8fafc`)**: Warm architectural drafting paper look suitable for day viewing and printing.
