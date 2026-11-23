@@ -906,6 +906,29 @@ ALL 8 ENDPOINT TESTS COMPLETED SUCCESSFULLY! SYSTEM READY FOR PRODUCTION.
 | `PDF generation timeout or failure` | Attempted DOM rasterization via html2canvas | HomePlanner uses native Canvas 2D in `pdfExport.js`; verify browser canvas support |
 | `Out-of-bounds room warning` | Room width/length exceeds plot perimeter | The Pydantic engine automatically clamps geometries; review input plot parameters |
 
+
+## ❓ Frequently Asked Questions (FAQ)
+
+<details>
+<summary><b>1. Can HomePlanner generate layouts for irregularly shaped (non-rectangular) plots?</b></summary>
+Currently, HomePlanner optimizes for standard rectangular and trapezoidal plots ($W \times L$). For irregular or triangular parcels, configure the bounding rectangle envelope; the conversational co-pilot can carve setbacks and angled boundaries in subsequent refinement turns.
+</details>
+
+<details>
+<summary><b>2. How accurate are the civil cost estimates for my specific locality?</b></summary>
+The cost calculation engine utilizes realistic regional benchmark averages (Bangalore ₹2,000/sq ft, Mumbai ₹2,500/sq ft, Hyderabad ₹1,800/sq ft). Construction costs include an 18% structural multiplier for walls and circulation. Exact finishing grades (standard vs luxury) can be adjusted via the cost worksheet.
+</details>
+
+<details>
+<summary><b>3. Is the exported blueprint legally valid for municipal sanction?</b></summary>
+The exported PDF provides an executive architectural specification including dimensioned CAD plans, carpet areas, and Vastu compliance schedules. Official municipal submissions must still be stamped by a registered local civil engineer or Council of Architecture (COA) licensed architect.
+</details>
+
+<details>
+<summary><b>4. Does the system support metric units (meters / square meters)?</b></summary>
+The core coordinate engine operates in standard architectural imperial feet. Future releases will introduce dynamic unit toggle switches allowing instant conversion between imperial feet/sq ft and metric meters/sq m.
+</details>
+
 ## 📜 License
 
 This project is licensed under the MIT License. Feel free to use, modify, and distribute for personal and commercial projects.
