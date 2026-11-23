@@ -845,6 +845,26 @@ cd ProjectBackend
 python test_endpoints.py
 ```
 
+
+### Test Suite Execution Output Reference
+
+When running `python test_endpoints.py`, all core subsystem tests are verified:
+
+```
+[TEST 1/8] GET / health check ................................. PASSED (status: ok)
+[TEST 2/8] POST /plans/generate (3 variants) ................... PASSED (3 valid plans)
+[TEST 3/8] POST /plans/refine (living room resize) ............. PASSED (mutated bounds)
+[TEST 4/8] POST /plans/ persistence ............................ PASSED (id: 6718d9f4e2...)
+[TEST 5/8] GET /plans/?session={uuid} dashboard query .......... PASSED (1 record found)
+[TEST 6/8] GET /plans/{id} detail fetch ........................ PASSED (full plan match)
+[TEST 7/8] GET /plans/{id}/public sharing view ................. PASSED (read-only plan)
+[TEST 8/8] DELETE /plans/{id} cleanup .......................... PASSED (200 deleted)
+
+================================================================================
+ALL 8 ENDPOINT TESTS COMPLETED SUCCESSFULLY! SYSTEM READY FOR PRODUCTION.
+================================================================================
+```
+
 ### Verified Test Cases
 1. `GET /` — API health check & LLM provider status.
 2. `POST /plans/generate` — Coordinate-bounded CAD generation with 3 distinct variants.
