@@ -75,6 +75,39 @@ flowchart TD
     Canvas --> PDF
 ```
 
+### Architectural Data Flow & Layer Interactions
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Architect / Client
+    participant UI as Studio UI (React 19)
+    participant API as FastAPI Gateway
+    participant Pydantic as Geometric Validator
+    participant LLM as Hybrid Inference (Groq/Gemini)
+    participant DB as MongoDB (Motor Async)
+
+    User->>UI: Enter plot dimensions & requirements
+    UI->>API: POST /plans/generate (Plot, Floors, Style, Rooms)
+    API->>LLM: Formatted System Prompt with CAD Rules
+    LLM-->>API: Cartesian Coordinate JSON Layout (3 Variants)
+    API->>Pydantic: Audit Bounds, Clamp Limits & Check Overlaps
+    Pydantic-->>API: Validated Structural Geometry
+    API-->>UI: Return 3 Distinct CAD Blueprint Variants
+    User->>UI: Select Variant B & Refine ("Move kitchen to SE")
+    UI->>API: POST /plans/refine (Current Plan + Message + History)
+    API->>LLM: Refinement Directive & Existing Geometry
+    LLM-->>API: Mutated Cartesian Coordinates
+    API->>Pydantic: Re-validate Spatial Boundary
+    Pydantic-->>API: Clean Mutated Floor Plan
+    API-->>UI: Updated Blueprint with Live CAD Animation
+    User->>UI: Click "Save Blueprint"
+    UI->>API: POST /plans/ (Plan Document + Session UUID)
+    API->>DB: Motor Async Insert to 'plans' Collection
+    DB-->>API: Generated Document ID
+    API-->>UI: Shareable Public Blueprint URL
+```
+
 ---
 
 ## 🚀 Key Features
