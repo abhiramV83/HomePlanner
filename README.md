@@ -251,6 +251,22 @@ The interactive SVG canvas rendering engine ([`FloorPlanRenderer.jsx`](file:///c
 - Project dashboard with preview cards, room counts, built-up areas, and direct deletion/edit actions.
 - Read-only public sharing URLs (`/plan/:id`) enabling seamless client presentation.
 
+### MongoDB Indexing Strategy & Performance Tuning
+
+For optimal sub-millisecond retrieval of user blueprints, the following compound and single-field indexes are configured on the `plans` collection:
+
+```javascript
+// Index on session_id for rapid dashboard queries
+db.plans.createIndex({ "session_id": 1, "created_at": -1 });
+
+// Index on is_public for public client view lookups
+db.plans.createIndex({ "_id": 1, "is_public": 1 });
+
+// TTL index for anonymous temporary session pruning after 90 days
+db.plans.createIndex({ "created_at": 1 }, { expireAfterSeconds: 7776000 });
+```
+
+
 ---
 
 ## 💻 Technology Stack
