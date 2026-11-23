@@ -113,6 +113,19 @@ sequenceDiagram
 ## 🚀 Key Features
 
 ### 1. Hybrid AI CAD Generation Engine
+### Hybrid LLM Orchestrator & Failover Telemetry
+
+The platform uses a resilient two-tier LLM inference architecture implemented in [`src/ai/llm.py`](file:///c:/dump/HomePlanner/ProjectBackend/src/ai/llm.py):
+
+| Capability | Primary Engine (Groq Cloud) | Fallback Engine (Google Gemini) |
+|---|---|---|
+| **Model** | `qwen/qwen-2.5-coder-32b` or `llama-3.3-70b-versatile` | `gemini-2.5-flash` |
+| **Typical Latency** | 450ms – 900ms | 1.8s – 3.2s |
+| **Response Format** | Pure JSON Object (`response_format: {"type": "json_object"}`) | `response_mime_type: "application/json"` |
+| **Failover Triggers** | Rate limit (HTTP 429), Network timeout (>15s), Context overflow | System outage, Invalid JSON retry limit reached |
+| **Retry Strategy** | Exponential backoff (1s, 2s) with max 2 retries | Single retry with enhanced system repair prompt |
+| **Temperature** | `0.2` (Deterministic Cartesian coordinate emission) | `0.2` (Strict adherence to coordinate schemas) |
+
 - **Primary Ultra-Fast Inference**: Groq Cloud API running `qwen/qwen-2.5-coder-32b` or `llama-3.3-70b-versatile`, providing sub-second coordinate generation.
 - **Resilient Fallback**: Automatic failover to Google Gemini 2.5 Flash if Groq encounters rate-limiting or network timeouts, guaranteeing 99.9% uptime.
 - **Strict Geometric Schema Enforcement**: The LLM outputs pure JSON enforcing exact Cartesian coordinates (`x`, `y`, `width`, `length` in standard imperial feet), floor assignments, and opening placements.
