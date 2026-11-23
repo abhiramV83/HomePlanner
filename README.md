@@ -255,6 +255,42 @@ The interactive SVG canvas rendering engine ([`FloorPlanRenderer.jsx`](file:///c
 
 ## 💻 Technology Stack
 
+
+### Frontend Component Hierarchy & State Lifecycle
+
+```mermaid
+flowchart TD
+    App["App.jsx (Router Context)"]
+    Layout["Layout.jsx (Header, Footer, Toast Provider)"]
+    Home["Home.jsx (Central CAD Studio Controller)"]
+    
+    App --> Layout
+    Layout --> Home
+    
+    subgraph StudioControls ["Workspace Panels"]
+        Form["Input Form Drawer<br/>(Plot Dimensions, Rooms, Styles)"]
+        Variant["VariantCompare.jsx<br/>(Option A / B / C Matrix)"]
+        Cost["CostPanel.jsx<br/>(Budget Worksheet & Rates)"]
+        Chat["ChatPanel.jsx<br/>(AI Refinement Co-Pilot)"]
+    end
+    
+    subgraph CADCanvas ["Drafting Viewport"]
+        Renderer["FloorPlanRenderer.jsx<br/>(SVG Vector Engine)"]
+        Compass["True North Dynamic Compass"]
+        FloorTabs["Multi-Storey Navigation Tabs"]
+        Hover["Room Spec Hover Inspector"]
+    end
+    
+    Home --> Form
+    Home --> Variant
+    Home --> Cost
+    Home --> Chat
+    Home --> Renderer
+    Renderer --> Compass
+    Renderer --> FloorTabs
+    Renderer --> Hover
+```
+
 ### Frontend
 | Technology | Version | Purpose |
 |---|---|---|
