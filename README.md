@@ -895,6 +895,17 @@ ALL 8 ENDPOINT TESTS COMPLETED SUCCESSFULLY! SYSTEM READY FOR PRODUCTION.
 
 ---
 
+
+## 🛠️ Troubleshooting & Diagnostic Matrix
+
+| Issue | Root Cause | Resolution |
+|---|---|---|
+| `Could not connect to MongoDB` | MongoDB service is stopped or port `27017` is blocked | Run `mongod --dbpath <data-dir>` or check `docker compose ps` |
+| `Groq API rate limit (429)` | High query volume on free-tier API key | System automatically fails over to Gemini; configure paid Groq tier in production |
+| `Blank screen on client navigation` | Vite base path mismatch | Ensure base URL is set to `/homeplanner/` in `vite.config.js` and React Router `basename` |
+| `PDF generation timeout or failure` | Attempted DOM rasterization via html2canvas | HomePlanner uses native Canvas 2D in `pdfExport.js`; verify browser canvas support |
+| `Out-of-bounds room warning` | Room width/length exceeds plot perimeter | The Pydantic engine automatically clamps geometries; review input plot parameters |
+
 ## 📜 License
 
 This project is licensed under the MIT License. Feel free to use, modify, and distribute for personal and commercial projects.
