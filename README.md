@@ -131,6 +131,22 @@ The platform uses a resilient two-tier LLM inference architecture implemented in
 - **Strict Geometric Schema Enforcement**: The LLM outputs pure JSON enforcing exact Cartesian coordinates (`x`, `y`, `width`, `length` in standard imperial feet), floor assignments, and opening placements.
 - **Pydantic Coordinate Clamping & Overlap Detection**: The backend validator audits each room against the physical plot envelope, clamps out-of-bounds geometries, and detects room collisions.
 
+
+### Coordinate Geometry Validation & Boundary Clamping
+
+Every raw coordinate vector emitted by the AI inference layer passes through the Pydantic structural validation engine ([`src/models.py`](file:///c:/dump/HomePlanner/ProjectBackend/src/models.py)):
+
+1. **Plot Boundary Clamping**:
+   - Ensures all rooms satisfy $x \ge 0$, $y \ge 0$, $x + \text{width} \le \text{plotWidth}$, and $y + \text{length} \le \text{plotLength}$.
+   - Automatically shrinks or repositions rooms exceeding plot limits by more than 5%.
+2. **Overlap & Intersection Detection**:
+   - Computes axis-aligned bounding box (AABB) intersection areas between all room pairs on each floor:
+     $$\\text{Overlap}(R_i, R_j) = \\max(0, \\min(R_i.x_2, R_j.x_2) - \\max(R_i.x_1, R_j.x_1)) \\times \\max(0, \\min(R_i.y_2, R_j.y_2) - \\max(R_i.y_1, R_j.y_1))$$
+   - Tolerates minor structural wall sharing ($\le 0.5\\text{ ft}$) while flagging overlapping room areas.
+3. **Opening Placement Validation**:
+   - Doors and windows are strictly bound to perimeter walls of their parent room.
+   - Door swing arcs (90° quarter-circle) are checked for clear internal clearance.
+
 ### 2. Multi-Variant CAD Exploration
 - Concurrently emits **3 distinctly themed architectural layout philosophies**:
   - **Option A (Open-Concept Flow)**: Prioritizes fluid connectivity, expanded social spaces, and continuous sightlines.
