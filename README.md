@@ -554,6 +554,19 @@ All blueprints are stored in the MongoDB `plans` collection with automatic times
 
 ## ⚙️ Step-by-Step Installation & Local Setup
 
+### Quick Start Verification Script
+
+Run the following one-line test to verify that all backend and frontend services are configured properly:
+
+```bash
+# Verify Python Environment and Pydantic Schemas
+cd ProjectBackend && python -c "import src.models; import src.main; print('Backend Models & FastAPI App Validated!')"
+
+# Verify Frontend Production Build
+cd ../ProjectFrontnd && npm run build
+```
+
+
 ### Prerequisites
 - **Python 3.10 or higher**
 - **Node.js 18 or higher** (with npm 9+)
