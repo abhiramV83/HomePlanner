@@ -1,12 +1,14 @@
 # HomePlanner — Autonomous AI Architectural Studio & CAD Blueprint Engine
 
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=black)](https://react.dev/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Python](https://img.shields.io/badge/Python-3.10%20%7C%203.11%20%7C%203.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Groq](https://img.shields.io/badge/Groq-Qwen%20%7C%20Llama-F55036?logo=groq&logoColor=white)](https://groq.com/)
 [![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash%20Fallback-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Motor%20Async-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-v4-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Compose%20Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+[![CI Pipeline](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)](.github/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 HomePlanner is a full-stack, enterprise-grade AI architectural studio that transforms natural-language spatial requirements (plot dimensions, story counts, design styles, room programs, and parking constraints) into coordinate-aligned, structurally valid 2D CAD floor plan blueprints.
 
@@ -18,17 +20,40 @@ The platform provides a complete architectural lifecycle:
 ## 📑 Table of Contents
 
 - [System Architecture](#-system-architecture)
+  - [Architectural Data Flow & Layer Interactions](#architectural-data-flow--layer-interactions)
 - [Key Features](#-key-features)
+  - [Hybrid LLM Orchestrator & Failover Telemetry](#hybrid-llm-orchestrator--failover-telemetry)
+  - [Coordinate Geometry Validation & Boundary Clamping](#coordinate-geometry-validation--boundary-clamping)
+  - [Layout Generation Heuristics & Spatial Optimization](#layout-generation-heuristics--spatial-optimization)
+  - [Natural Language Mutation Capabilities](#natural-language-mutation-capabilities)
+  - [CAD Studio Design Tokens & Visual Hierarchy](#cad-studio-design-tokens--visual-hierarchy)
 - [Technology Stack](#-technology-stack)
+  - [Frontend Component Hierarchy & State Lifecycle](#frontend-component-hierarchy--state-lifecycle)
+  - [MongoDB Indexing Strategy & Performance Tuning](#mongodb-indexing-strategy--performance-tuning)
 - [Project Directory Structure](#-project-directory-structure)
 - [Data Models & Schema Specifications](#-data-models--schema-specifications)
 - [API Reference](#-api-reference)
+  - [POST /plans/generate Detailed Specification](#post-plansgenerate-detailed-specification)
+  - [POST /plans/refine Detailed Specification](#post-plansrefine-detailed-specification)
+  - [Blueprint Persistence & Storage Schema](#blueprint-persistence--storage-schema)
 - [Step-by-Step Installation & Local Setup](#-step-by-step-installation--local-setup)
+  - [Quick Start Verification Script](#quick-start-verification-script)
+  - [Environment Variables Reference](#environment-variables-reference)
+  - [Containerized Setup with Docker Compose](#step-4-containerized-setup-with-docker-compose)
 - [Vastu Shastra Assessment Engine](#-vastu-shastra-assessment-engine)
+  - [Vedic Spatial Harmony Principles](#vedic-spatial-harmony-principles)
 - [Civil Construction Cost Estimation Engine](#-civil-construction-cost-estimation-engine)
-- [Executive 3-Page CAD PDF Specification Sheet](#-executive-3-page-cad-pdf-specification-sheet)
+  - [Regional Cost Matrix & Structural Overhead](#regional-cost-matrix--structural-overhead)
+- [Executive Multi-Floor CAD PDF Specification Sheet](#-executive-multi-floor-cad-pdf-specification-sheet)
+- [Performance Optimization & 60 FPS CAD Rendering](#-performance-optimization--60-fps-cad-rendering)
 - [UI/UX Design Standards](#-uiux-design-standards)
+  - [Accessibility & WCAG 2.1 AA Compliance Standards](#accessibility--wcag-21-aa-compliance-standards)
 - [Integration Testing](#-integration-testing)
+  - [Test Suite Execution Output Reference](#test-suite-execution-output-reference)
+- [Troubleshooting & Diagnostic Matrix](#-troubleshooting--diagnostic-matrix)
+- [Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+- [Product Roadmap & Future Milestones](#-product-roadmap--future-milestones)
+- [Documentation Index & Resources](#-documentation-index--resources)
 - [License](#-license)
 
 ---
@@ -938,6 +963,17 @@ The core coordinate engine operates in standard architectural imperial feet. Fut
 - [ ] **v2.3 (Q2 2027)**: Industry-standard IFC / BIM file export for Revit and ArchiCAD workflows.
 - [ ] **v2.4 (Q3 2027)**: Real-time collaborative multi-user editing via WebSockets.
 - [ ] **v2.5 (Q4 2027)**: Augmented Reality (AR) mobile on-site floorplan projection using WebXR.
+
+## 📚 Documentation Index & Resources
+
+For comprehensive technical specifications and operational runbooks, refer to the documentation modules:
+
+- 🏛️ **[System Architecture Guide](docs/ARCHITECTURE.md)**: Deep dive into the architectural principles, geometry clamping, and event loop.
+- 🧭 **[Vastu Purusha Mathematical Specification](docs/VASTU_SPECIFICATION.md)**: Mathematical derivations of centroid offsets and directional bearing matrices.
+- 📡 **[REST API Reference](docs/API.md)**: Complete OpenAPI 3.1 specification, request schemas, and curl examples.
+- 🚀 **[Multi-Cloud Production Deployment](docs/DEPLOYMENT.md)**: AWS ECS, Docker Compose, Vercel, and Render production guides.
+- 🤝 **[Contributor Guidelines](CONTRIBUTING.md)**: Code of conduct, branching strategy, and PR review checklist.
+- 📝 **[Changelog](CHANGELOG.md)**: Detailed version history and architectural changes across releases.
 
 ## 📜 License
 
