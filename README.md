@@ -846,6 +846,14 @@ The frontend adheres to the `ui-ux-pro-max` architectural design system:
 
 ---
 
+
+### Accessibility & WCAG 2.1 AA Compliance Standards
+
+- **Semantic HTML & Landmarks**: All regions are designated with appropriate HTML5 tags (`<main>`, `<nav>`, `<aside>`, `<section>`).
+- **High-Contrast Design Tokens**: All text layers achieve $\ge 4.5:1$ contrast against their respective backgrounds in both Blueprint Dark and Parchment Light themes.
+- **Accessible Touch & Click Targets**: All interactive buttons, stepper increments, and floor tabs maintain $\ge 44 \times 44\text{ px}$ target bounds.
+- **Screen Reader Announcements**: Live regions (`aria-live="polite"`) broadcast generation status and radar scan progress to assistive technologies.
+
 ## 🧪 Integration Testing
 
 The backend includes a test suite ([test_endpoints.py](file:///c:/dump/HomePlanner/ProjectBackend/test_endpoints.py)) verifying all 8 endpoints:
