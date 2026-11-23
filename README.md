@@ -479,6 +479,32 @@ Content-Type: application/json
 ```
 
 ### 3. Plan Persistence & CRUD
+
+#### Blueprint Persistence & Storage Schema
+
+All blueprints are stored in the MongoDB `plans` collection with automatic timestamps and indexed session identifiers:
+
+```json
+{
+  "_id": "6718d9f4e2b0c1a9e4f50123",
+  "session_id": "b8a531d0-a0e2-475b-9d25-9ef854c600f1",
+  "meta": {
+    "title": "The Horizon Villa",
+    "plotWidth": 30.0,
+    "plotLength": 40.0,
+    "totalFloors": 2,
+    "style": "Modern Minimalist",
+    "northDirection": 45.0,
+    "description": "Executive two-story home with Vastu-aligned kitchen."
+  },
+  "rooms": [...],
+  "openings": [...],
+  "is_public": true,
+  "created_at": "2026-10-23T14:30:00.000Z",
+  "updated_at": "2026-10-23T14:35:12.000Z"
+}
+```
+
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/plans/` | Save or update a blueprint document |
