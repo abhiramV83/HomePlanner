@@ -397,6 +397,27 @@ HomePlanner/
 ## 📡 API Reference
 
 ### 1. Generate CAD Floor Plans
+
+#### POST /plans/generate Detailed Specification
+
+- **Method**: `POST`
+- **Path**: `/plans/generate`
+- **Rate Limit**: 15 requests / minute
+- **Request Headers**: `Content-Type: application/json`
+
+| Field | Type | Validation Constraints | Description |
+|---|---|---|---|
+| `plot_width` | `float` | $15.0 \le x \le 200.0$ ft | Width of plot in imperial feet along X axis |
+| `plot_length` | `float` | $20.0 \le y \le 300.0$ ft | Length of plot in imperial feet along Y axis |
+| `floors` | `integer` | $1 \le n \le 4$ storeys | Number of architectural levels |
+| `bedrooms` | `integer` | $1 \le n \le 10$ rooms | Total bedroom count |
+| `bathrooms` | `integer` | $1 \le n \le 10$ rooms | Total bathroom count |
+| `style` | `string` | Enum / Freeform | Architectural styling prompt (e.g. "Modern Luxury") |
+| `kitchen_type` | `string` | `"open"`, `"closed"`, `"semi-open"` | Kitchen configuration |
+| `parking` | `string` | `"none"`, `"bike"`, `"car"`, `"2-cars"` | Parking bay accommodation |
+| `extras` | `array[str]` | `["balcony", "pooja", "home_office", "gym"]` | Optional architectural program rooms |
+| `variants` | `integer` | Default `3` | Number of distinct CAD layout variants to emit |
+
 ```http
 POST /plans/generate
 Content-Type: application/json
