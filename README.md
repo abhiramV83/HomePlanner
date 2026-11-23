@@ -581,6 +581,20 @@ The Vastu engine ([vastu.js](file:///c:/dump/HomePlanner/ProjectFrontnd/src/util
 
 ## 💰 Civil Construction Cost Estimation Engine
 
+### Regional Cost Matrix & Structural Overhead
+
+The construction estimation engine factors in geographical variations in material costs (cement, steel, aggregate) and skilled labor wages:
+
+| Location Category | Representative Cities | Base Rate / sq ft | Built-up Structural Factor |
+|---|---|---|---|
+| **Tier-1 Metropolitan (High)** | Mumbai, MMR Region | ₹2,500 / sq ft | $1.18 \times \text{Carpet Area}$ |
+| **Tier-1 Tech Hubs (Standard)** | Bengaluru, Hyderabad, Pune, Chennai | ₹1,800 – ₹2,000 / sq ft | $1.18 \times \text{Carpet Area}$ |
+| **Tier-2 Developing Cities** | Ahmedabad, Jaipur, Lucknow, Chandigarh | ₹1,400 – ₹1,600 / sq ft | $1.18 \times \text{Carpet Area}$ |
+| **Tier-3 / Semi-Urban** | Regional district headquarters, towns | ₹1,200 / sq ft | $1.18 \times \text{Carpet Area}$ |
+
+$$\text{Estimated Total Cost} = \sum_{\text{floors}} \left( \sum_{i \in \text{rooms}} \text{Area}_i \right) \times 1.18 \times \text{Regional Rate}$$
+
+
 The civil cost engine ([costEstimate.js](file:///c:/dump/HomePlanner/ProjectFrontnd/src/utils/costEstimate.js)) computes practical construction budgets:
 
 1. **Carpet Area Calculation**: Sum of individual room footprints ($\sum w_i \times l_i$).
