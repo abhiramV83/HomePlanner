@@ -929,6 +929,16 @@ The exported PDF provides an executive architectural specification including dim
 The core coordinate engine operates in standard architectural imperial feet. Future releases will introduce dynamic unit toggle switches allowing instant conversion between imperial feet/sq ft and metric meters/sq m.
 </details>
 
+
+## 🗺️ Product Roadmap & Future Milestones
+
+- [x] **v2.0**: React 19 + FastAPI architectural rebuild with Groq/Gemini hybrid failover.
+- [x] **v2.1**: Multi-floor CAD blueprint generation and dynamic multi-page executive PDF exporter.
+- [ ] **v2.2 (Q1 2027)**: WebGL Three.js interactive 3D isometric cutaway model generator.
+- [ ] **v2.3 (Q2 2027)**: Industry-standard IFC / BIM file export for Revit and ArchiCAD workflows.
+- [ ] **v2.4 (Q3 2027)**: Real-time collaborative multi-user editing via WebSockets.
+- [ ] **v2.5 (Q4 2027)**: Augmented Reality (AR) mobile on-site floorplan projection using WebXR.
+
 ## 📜 License
 
 This project is licensed under the MIT License. Feel free to use, modify, and distribute for personal and commercial projects.
