@@ -180,6 +180,16 @@ Every raw coordinate vector emitted by the AI inference layer passes through the
   - *"Make the living and dining rooms open concept"*
 - Quick suggestion chips for rapid single-click architectural refinements.
 
+#### Natural Language Mutation Capabilities
+- **Dimensional Adjustments**: Scale width/length of any room while automatically shifting neighboring aligned partitions.
+- **Zonal Relocations**: Transpose rooms between quadrants (e.g., swapping kitchen and bedroom) with automatic opening realignment.
+- **Architectural Program Additions**: Add ensuite bathrooms, walk-in closets, balconies, pooja rooms, or utility washrooms on any floor.
+- **Context Retention**: Maintains full multi-turn conversational history to support progressive iterations:
+  1. *"Add a terrace to the master bedroom on floor 1"*
+  2. *"Make it 2 feet wider and add French doors"*
+  3. *"Ensure it faces North for natural morning light"*
+
+
 ### 5. Vastu Purusha Compliance Rating
 - Calculates room centroid coordinates relative to plot geometric center:
   $$\text{dx} = r_x - p_x, \quad \text{dy} = p_y - r_y$$
