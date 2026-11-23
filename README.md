@@ -645,6 +645,24 @@ Copy `.env.example` to `.env`:
 
 ---
 
+
+### Step 4: Containerized Setup with Docker Compose
+
+For zero-configuration container deployment, execute:
+
+```bash
+# 1. Create .env file with your API keys
+cp ProjectBackend/.env.example .env
+
+# 2. Launch all three containers (FastAPI, React Vite SPA, MongoDB)
+docker compose up -d --build
+
+# 3. Access applications
+# Frontend Studio: http://localhost:5173/homeplanner/
+# Backend Swagger: http://localhost:8000/docs
+# MongoDB: mongodb://localhost:27017
+```
+
 ### Step 3: Frontend Setup
 
 1. Open a new terminal and navigate to the frontend directory:

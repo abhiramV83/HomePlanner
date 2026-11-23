@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./ProjectBackend
+      dockerfile: Dockerfile
+    container_name: homeplanner-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - MONGO_URI=mongodb://mongo:27017
+      - DATABASE_NAME=homeplanner
+    depends_on:
+      - mongo
+    networks:
+      - homeplanner-net
+
+  frontend:
+    build:
+      context: ./ProjectFrontnd
+      dockerfile: Dockerfile
+    container_name: homeplanner-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - homeplanner-net
+
+  mongo:
+    image: mongo:6.0
+    container_name: homeplanner-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - homeplanner-net
+
+networks:
+  homeplanner-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local
